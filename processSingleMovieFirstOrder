@@ -1,4 +1,4 @@
-function processSingleMovieFolder(folderPath)
+function processSingleMovieFirstOrder(folderPath)
 
     % Call the function to extract the data
     [filesNames, numBehaviors, behaviorLabels, numFlies] = extractBehaviorData(folderPath);
