@@ -1,5 +1,9 @@
-function processMultipleMoviesFolders()
-    % processMultipleMoviesFolders: Prompts user to select folders, processes each folder independently.
+function processMultipleMoviesFolders(processingFunction)
+    % processMultipleMoviesFolders: Prompts user to select folders, processes each folder using the specified function.
+    %
+    % Inputs:
+    % - processingFunction: Function handle for the specific processing task 
+    %   (e.g., @processSingleMovieFirstOrder or @processSingleMovieHighOrder).
     %
     % This function allows the user to select multiple movie folders. Each folder is
     % processed independently to extract behavioral data and generate matrices.
@@ -13,17 +17,16 @@ function processMultipleMoviesFolders()
         return;
     end
     
-    % Loop over each folder and process its files
+    % Loop over each folder and process its files using the specified function
     for folderIdx = 1:length(movieFolders)
         folderPath = movieFolders{folderIdx};
 
-        % Print a clear separator for each folder
-        disp(' ');
         disp(repmat('=', 1, 80));  % Line of 80 equal signs
         disp(['Starting processing for folder: ', folderPath]);
         disp(repmat('-', 1, 80));  % Line of 80 dashes
 
-        processSingleMovieFolder(folderPath);
+        % Call the specified processing function
+        processingFunction(folderPath);
 
         % Print completion message
         disp(repmat('-', 1, 80));  % Line of 80 dashes
