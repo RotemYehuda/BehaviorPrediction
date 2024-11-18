@@ -1,0 +1,80 @@
+function processSingleMovieFolder(folderPath)
+
+    % Call the function to extract the data
+    [filesNames, numBehaviors, behaviorLabels, numFlies] = extractBehaviorData(folderPath);
+    
+    % Initialize a cell array to store combined scores matrices for each fly 
+    % combinedScoresMatrices = cell(1, numFlies);
+
+    % Initialize a cell array to store transition matrices for each fly
+    transitionMatrices = cell(1, numFlies);
+
+    % Loop through each fly to create and store combined scores matrices
+    for flyNum = 1:numFlies
+        % Generate the combined scores matrix for the current fly
+        [combinedScoresMatrix, ~] = createCombinedScoresMatrix(filesNames, numBehaviors, flyNum);
+        
+        % Store the combined scores matrix in the cell array
+        % combinedScoresMatrices{flyNum} = combinedScoresMatrix;
+        
+        % Generate the transition matrix for the current fly
+        transitionMatrix = computeFirstOrderTransitionMatrix(combinedScoresMatrix);
+        
+        % Store the transition matrix for the current fly
+        transitionMatrices{flyNum} = transitionMatrix;
+    end
+
+    % Calculate the average transition matrix for the movie
+    averageMovieMatrix = zeros(numBehaviors, numBehaviors);
+    for i = 1:numBehaviors
+        for j = 1:numBehaviors
+            % Average over all flies for element (i, j)
+            for flyNum = 1:numFlies
+                averageMovieMatrix(i, j) = averageMovieMatrix(i, j) + transitionMatrices{flyNum}(i, j);
+            end
+            % Divide by the number of flies
+            averageMovieMatrix(i, j) = averageMovieMatrix(i, j) / numFlies;
+        end
+    end
+    
+    disp('First-order transition matrices computed for all flies.');
+
+    % Define base output directory
+    baseOutputDir = fullfile(folderPath, 'FirstOrderTransitionMatrices');
+    outputDir = baseOutputDir;
+    
+    % Check if the folder exists, and append a counter if it does
+    counter = 1;
+    while exist(outputDir, 'dir')
+        outputDir = sprintf('%s_%d', baseOutputDir, counter);
+        counter = counter + 1;
+    end
+
+    % Create the unique output directory
+    mkdir(outputDir);
+    disp(['Created output folder: ', outputDir]);
+
+    % Save transition matrices to an Excel file in the created directory
+    excelFileName = fullfile(outputDir, 'transitionMatrices.xlsx');
+
+    % Loop through flies to save individual transition matrices
+    for flyNum = 1:numFlies
+        % Create header for the current matrix
+        headerRow = [{' '},  behaviorLabels(:)'];  % Top-left corner blank
+        matrixWithLabels = [behaviorLabels, num2cell(transitionMatrices{flyNum})];
+        dataToWrite = [headerRow; matrixWithLabels];
+        
+        % Write to the Excel file
+        sheetName = sprintf('flyNum_%d', flyNum);
+        writecell(dataToWrite, excelFileName, 'Sheet', sheetName);
+    end
+
+    % Save the average transition matrix
+    headerRow = [{' '},  behaviorLabels(:)'];
+    avgMatrixWithLabels = [behaviorLabels, num2cell(averageMovieMatrix)];
+    dataToWriteAvg = [headerRow; avgMatrixWithLabels];
+    writecell(dataToWriteAvg, excelFileName, 'Sheet', 'avgMatrix');
+
+    generateAndSaveHeatmaps(outputDir, transitionMatrices, averageMovieMatrix, behaviorLabels, numFlies);
+    disp(['All transition matrices and heatmaps saved in ', outputDir]);
+end
