@@ -7,59 +7,70 @@ function generateAndSaveHeatmaps(outputDir, transitionMatrices, avgMatrix, behav
     % - avgMatrix: Average transition matrix.
     % - behaviorLabels: Labels for the behaviors.
     % - numFlies: Number of flies.
+    
+    % Create subdirectories for heatmaps
+    standardHeatmapsDir = fullfile(outputDir, 'StandardHeatmaps');
+    customHeatmapsDir = fullfile(outputDir, 'CustomHeatmaps');
+    
+    if ~exist(standardHeatmapsDir, 'dir')
+        mkdir(standardHeatmapsDir);
+    end
+    if ~exist(customHeatmapsDir, 'dir')
+        mkdir(customHeatmapsDir);
+    end
 
     % Define colormap
     cmap = hot;  % Use the hot colormap to match the example
 
-    % Generate and save heatmaps for individual flies
+    % Generate and save standard heatmaps for individual flies
     for flyNum = 1:numFlies
-        fig = figure('Visible', 'off');  % Create heatmap without showing it
-        imagesc(transitionMatrices{flyNum});  % Display matrix as image
-        colormap(cmap);  % Apply colormap
-        colorbar;  % Add colorbar
-        caxis([0, 1]);  % Normalize color scale to [0, 1]
+        fig = figure('Visible', 'off');
+        imagesc(transitionMatrices{flyNum});
+        colormap(cmap);
+        colorbar;
+        caxis([0, 1]);
         xticks(1:numel(behaviorLabels));
         yticks(1:numel(behaviorLabels));
         xticklabels(behaviorLabels);
         yticklabels(behaviorLabels);
-        xtickangle(45);  % Rotate x-axis labels
+        xtickangle(45);
         ylabel('From');
         xlabel('To');
         title(['Fly ', num2str(flyNum), ' Transition Matrix']);
         
         % Save figure as PNG
-        saveas(fig, fullfile(outputDir, sprintf('heatmap_flyNum_%d.png', flyNum)));
-        close(fig);  % Close figure to free memory
+        saveas(fig, fullfile(standardHeatmapsDir, sprintf('heatmap_flyNum_%d.png', flyNum)));
+        close(fig);
     end
 
-    % Generate and save heatmap for the average matrix
-    fig = figure('Visible', 'off');  % Create figure in the background
-    imagesc(avgMatrix);  % Display the average matrix as a heatmap
-    colormap(cmap);  % Apply colormap
-    colorbar;  % Add colorbar
-    caxis([0, 1]);  % Normalize the color scale to [0, 1]
-    xticks(1:numel(behaviorLabels));  % Set x-ticks to match the labels
-    yticks(1:numel(behaviorLabels));  % Set y-ticks to match the labels
-    xticklabels(behaviorLabels);  % Apply behavior labels to x-axis
-    yticklabels(behaviorLabels);  % Apply behavior labels to y-axis
-    xtickangle(45);  % Rotate x-axis labels for better readability
-    ylabel('From');  % Y-axis label
-    xlabel('To');  % X-axis label
-    title('Average Transition Matrix');  % Heatmap title
+    % Generate and save standard heatmap for the average matrix
+    fig = figure('Visible', 'off');
+    imagesc(avgMatrix);
+    colormap(cmap);
+    colorbar;
+    caxis([0, 1]);
+    xticks(1:numel(behaviorLabels));
+    yticks(1:numel(behaviorLabels));
+    xticklabels(behaviorLabels);
+    yticklabels(behaviorLabels);
+    xtickangle(45);
+    ylabel('From');
+    xlabel('To');
+    title('Average Transition Matrix');
 
-    % Save figure as PNG
-    saveas(fig, fullfile(outputDir, 'heatmap_avgMatrix.png'));  % Save as heatmap_avgMatrix.png
-    close(fig);  % Close figure to free memory
+    % Save figure as PNG in the standard heatmaps folder
+    saveas(fig, fullfile(standardHeatmapsDir, 'heatmap_avgMatrix.png'));
+    close(fig);
 
     % Generate custom heatmaps for "Touch" and "Long Distance Approach"
     customBehaviors = {'Touch', 'Long Distance Approach'};  % Behaviors to filter
 
     for flyNum = 1:numFlies
-        generateCustomHeatmap(outputDir, transitionMatrices{flyNum}, behaviorLabels, customBehaviors, sprintf('heatmap_custom_flyNum_%d.png', flyNum), flyNum);
+        generateCustomHeatmap(customHeatmapsDir, transitionMatrices{flyNum}, behaviorLabels, customBehaviors, sprintf('heatmap_custom_flyNum_%d.png', flyNum), flyNum);
     end
 
     % Generate custom heatmap for the average matrix
-    generateCustomHeatmap(outputDir, avgMatrix, behaviorLabels, customBehaviors, 'heatmap_custom_avgMatrix.png', 'Average');
+    generateCustomHeatmap(customHeatmapsDir, avgMatrix, behaviorLabels, customBehaviors, 'heatmap_custom_avgMatrix.png', 'Average');
 end
 
 function generateCustomHeatmap(outputDir, matrix, behaviorLabels, customBehaviors, fileName, titleLabel)
@@ -74,7 +85,16 @@ function generateCustomHeatmap(outputDir, matrix, behaviorLabels, customBehavior
 
     % Find indices of custom behaviors
     selectedRows = ismember(behaviorLabels, customBehaviors);
-    selectedMatrix = matrix(selectedRows, :);  % Filter rows, keep all columns
+    
+    if ~any(selectedRows)
+        % Print a warning if no custom behaviors are found
+        disp(['Warning: None of the custom behaviors "', strjoin(customBehaviors, ', '), ...
+              '" exist in the behavior labels for ', titleLabel, '.']);
+        return;
+    end
+
+    % Extract the relevant matrix rows and labels
+    selectedMatrix = matrix(selectedRows, :);
     selectedBehaviorLabels = behaviorLabels(selectedRows);
 
     % Create and save custom heatmap
