@@ -1,4 +1,9 @@
-function processSingleMovieFirstOrder(folderPath)
+function processSingleMovieFirstOrder(folderPath, ~)
+    % processSingleMovieFirstOrder: Compute first-order transition matrices.
+    % 
+    % Inputs:
+    % - folderPath: Path to folder containing data.
+    % - ~: Placeholder for an unused input (k).
 
     % Call the function to extract the data
     [filesNames, numBehaviors, behaviorLabels, numFlies] = extractBehaviorData(folderPath);
@@ -39,41 +44,11 @@ function processSingleMovieFirstOrder(folderPath)
     
     disp('First-order transition matrices computed for all flies.');
 
-    % Define base output directory
-    baseOutputDir = fullfile(folderPath, 'FirstOrderTransitionMatrices');
-    outputDir = baseOutputDir;
-    
-    % Check if the folder exists, and append a counter if it does
-    counter = 1;
-    while exist(outputDir, 'dir')
-        outputDir = sprintf('%s_%d', baseOutputDir, counter);
-        counter = counter + 1;
-    end
-
-    % Create the unique output directory
-    mkdir(outputDir);
-    disp(['Created output folder: ', outputDir]);
+    outputDir = createUniqueOutputDir(folderPath, 'FirstOrderTransitionMatrices');
 
     % Save transition matrices to an Excel file in the created directory
     excelFileName = fullfile(outputDir, 'transitionMatrices.xlsx');
-
-    % Loop through flies to save individual transition matrices
-    for flyNum = 1:numFlies
-        % Create header for the current matrix
-        headerRow = [{' '},  behaviorLabels(:)'];  % Top-left corner blank
-        matrixWithLabels = [behaviorLabels, num2cell(transitionMatrices{flyNum})];
-        dataToWrite = [headerRow; matrixWithLabels];
-        
-        % Write to the Excel file
-        sheetName = sprintf('flyNum_%d', flyNum);
-        writecell(dataToWrite, excelFileName, 'Sheet', sheetName);
-    end
-
-    % Save the average transition matrix
-    headerRow = [{' '},  behaviorLabels(:)'];
-    avgMatrixWithLabels = [behaviorLabels, num2cell(averageMovieMatrix)];
-    dataToWriteAvg = [headerRow; avgMatrixWithLabels];
-    writecell(dataToWriteAvg, excelFileName, 'Sheet', 'avgMatrix');
+    saveFirstOrderTransitionMatricesToExcel(excelFileName, transitionMatrices, averageMovieMatrix, behaviorLabels, numFlies);
 
     generateAndSaveHeatmaps(outputDir, transitionMatrices, averageMovieMatrix, behaviorLabels, numFlies);
     disp(['All transition matrices and heatmaps saved in ', outputDir]);
