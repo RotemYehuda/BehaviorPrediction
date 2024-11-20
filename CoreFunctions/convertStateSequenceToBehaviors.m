@@ -15,7 +15,7 @@ function behaviorSequences = convertStateSequenceToBehaviors(stateCells, behavio
         numericSequence = str2num(stateCells{i}); %#ok<ST2NM> 
         
         % Map each number to its corresponding behavior name
-        behaviorSequence = strjoin(behaviorLabels(numericSequence), ', ');
+        behaviorSequence = strjoin(behaviorLabels(numericSequence), ' -> ');
         
         % Store the result
         behaviorSequences{i} = behaviorSequence;
