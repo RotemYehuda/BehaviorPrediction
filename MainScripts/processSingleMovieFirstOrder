@@ -1,51 +1,57 @@
-function processSingleMovieHighOrder(folderPath, k)
-    % processSingleMovieHighOrder: Computes high-order transition matrices for a given movie folder.
-    %
+function processSingleMovieFirstOrder(folderPath, ~)
+    % processSingleMovieFirstOrder: Compute first-order transition matrices.
+    % 
     % Inputs:
-    % - folderPath: Path to the folder containing scores files.
-    % - k: Order of the transition matrix (k >= 2).
-    %
-    % Outputs:
-    % - Saves transition matrices and heatmaps in a subdirectory within the folderPath.
-    
-    % Validate input
-    if k < 1
-        error('Order k must be >= 1 for high-order transition matrices.');
-    end
+    % - folderPath: Path to folder containing data.
+    % - ~: Placeholder for an unused input (k).
 
-    % Extract scores and metadata
+    % Call the function to extract the data
     [filesNames, numBehaviors, behaviorLabels, numFlies] = extractBehaviorData(folderPath);
-
+    
     % Initialize a cell array to store combined scores matrices for each fly 
-    %combinedScoresMatrices = cell(1, numFlies);
+    % combinedScoresMatrices = cell(1, numFlies);
 
-    % Initialize cell arrays to store high-order transition matrices
+    % Initialize a cell array to store transition matrices for each fly
     transitionMatrices = cell(1, numFlies);
 
-    % Compute high-order transition matrix for each fly
+    % Loop through each fly to create and store combined scores matrices
     for flyNum = 1:numFlies
-        % Load scores for the current fly
+        % Generate the combined scores matrix for the current fly
         [combinedScoresMatrix, ~] = createCombinedScoresMatrix(filesNames, numBehaviors, flyNum);
-
+        
         % Store the combined scores matrix in the cell array
         % combinedScoresMatrices{flyNum} = combinedScoresMatrix;
-
-        % Compute high-order transition matrix
-        [transitionMatrix, filteredStates] = computeHighOrderTransitionMatrix(combinedScoresMatrix, k);
-        transitionMatrices{flyNum} = struct('matrix', transitionMatrix, 'states', filteredStates);
+        
+        % Generate the transition matrix for the current fly
+        transitionMatrix = computeFirstOrderTransitionMatrix(combinedScoresMatrix);
+        
+        % Store the transition matrix for the current fly
+        transitionMatrices{flyNum} = transitionMatrix;
     end
 
-    % Compute the average high-order transition matrix
-    [avgMatrix, allStates] = computeHighOrderAverageMatrix(transitionMatrices, behaviorLabels);
+    % Calculate the average transition matrix for the movie
+    avgMatrix = zeros(numBehaviors, numBehaviors);
+    for i = 1:numBehaviors
+        for j = 1:numBehaviors
+            % Average over all flies for element (i, j)
+            for flyNum = 1:numFlies
+                avgMatrix(i, j) = avgMatrix(i, j) + transitionMatrices{flyNum}(i, j);
+            end
+            % Divide by the number of flies
+            avgMatrix(i, j) = avgMatrix(i, j) / numFlies;
+        end
+    end
+    
+    disp('First-order transition matrices computed for all flies.');
 
-    disp('High-order transition matrices computed for all flies.');
-
-    outputDir = createUniqueOutputDir(folderPath, ['HighOrderTransitionMatrices_k', num2str(k)]);
+    outputDir = createUniqueOutputDir(folderPath, 'FirstOrderTransitionMatrices');
 
     % Save transition matrices to an Excel file in the created directory
-    excelFileName = fullfile(outputDir, 'transitionMatrices.xlsx');    
-    saveHighOrderTransitionMatricesToExcel(excelFileName, transitionMatrices, avgMatrix, allStates, behaviorLabels);
+    excelFileName = fullfile(outputDir, 'transitionMatrices.xlsx');
+    saveFirstOrderTransitionMatricesToExcel(excelFileName, transitionMatrices, avgMatrix, behaviorLabels, numFlies);
 
-    generateHighOrderHeatmaps(outputDir, transitionMatrices, avgMatrix, allStates, behaviorLabels, numFlies);
+    generateFirstOrderHeatmaps(outputDir, transitionMatrices, avgMatrix, behaviorLabels, numFlies);
+    % generateAndSavePieCharts(outputDir, transitionMatrices, avgMatrix, behaviorLabels, numFlies);
 
+    disp(['All transition matrices and heatmaps saved in ', outputDir]);
 end
