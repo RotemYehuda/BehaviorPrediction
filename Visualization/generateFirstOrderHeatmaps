@@ -1,5 +1,5 @@
-function generateAndSaveHeatmaps(outputDir, transitionMatrices, avgMatrix, behaviorLabels, numFlies)
-    % generateAndSaveHeatmaps: Generates heatmaps and saves them as PNG files.
+function generateFirstOrderHeatmaps(outputDir, transitionMatrices, avgMatrix, behaviorLabels, numFlies)
+    % generateFirstOrderHeatmaps: Generates heatmaps and saves them as PNG files.
     %
     % Inputs:
     % - outputDir: Directory where heatmaps will be saved.
@@ -20,7 +20,7 @@ function generateAndSaveHeatmaps(outputDir, transitionMatrices, avgMatrix, behav
     end
 
     % Define colormap
-    cmap = hot;  % Use the hot colormap to match the example
+    cmap = flipud(bone);
 
     % Generate and save standard heatmaps for individual flies
     for flyNum = 1:numFlies
