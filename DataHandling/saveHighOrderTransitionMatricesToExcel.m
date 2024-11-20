@@ -38,16 +38,17 @@ function saveSingleTransitionMatrixToExcel(excelFileName, sheetName, states, mat
     % - behaviorLabels: Cell array of behavior labels.
 
     % Create header for the matrix
-    headerRow = [{'State Sequence'}, {'Behavior Sequence'}, behaviorLabels(:)'];
+    headerRow = [{'Behavior Sequence'}, behaviorLabels(:)'];
 
     % Convert states to strings and map to behavior sequences
     stateCells = cellstr(num2str(states));
     behaviorSequences = convertStateSequenceToBehaviors(stateCells, behaviorLabels);
 
     % Combine states, behavior sequences, and matrix data
-    matrixWithLabels = [stateCells, behaviorSequences, num2cell(matrix)];
+    matrixWithLabels = [behaviorSequences, num2cell(matrix)];
     dataToWrite = [headerRow; matrixWithLabels];
 
     % Write to the specified Excel sheet
     writecell(dataToWrite, excelFileName, 'Sheet', sheetName);
 end
+
