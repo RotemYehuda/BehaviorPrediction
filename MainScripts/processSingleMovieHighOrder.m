@@ -36,7 +36,7 @@ function processSingleMovieHighOrder(folderPath, k)
     end
 
     % Compute the average high-order transition matrix
-    [averagedMatrix, allStates] = computeHighOrderAverageMatrix(transitionMatrices, behaviorLabels);
+    [avgMatrix, allStates] = computeHighOrderAverageMatrix(transitionMatrices, behaviorLabels);
 
     disp('High-order transition matrices computed for all flies.');
 
@@ -44,7 +44,8 @@ function processSingleMovieHighOrder(folderPath, k)
 
     % Save transition matrices to an Excel file in the created directory
     excelFileName = fullfile(outputDir, 'transitionMatrices.xlsx');    
-    saveHighOrderTransitionMatricesToExcel(excelFileName, transitionMatrices, averagedMatrix, allStates, behaviorLabels);
+    saveHighOrderTransitionMatricesToExcel(excelFileName, transitionMatrices, avgMatrix, allStates, behaviorLabels);
 
+    generateHighOrderHeatmaps(outputDir, transitionMatrices, avgMatrix, allStates, behaviorLabels, numFlies);
 
 end
