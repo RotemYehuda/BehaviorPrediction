@@ -1,25 +1,24 @@
 function outputDir = createUniqueOutputDir(baseDir, subfolderName)
-    % createUniqueOutputDir: Creates a unique subfolder within a base directory.
+    % createUniqueOutputDir: Creates a subfolder within a base directory, overwriting if it exists.
     %
     % Inputs:
     % - baseDir: The base directory where the subfolder will be created.
     % - subfolderName: The desired name of the subfolder.
     %
     % Output:
-    % - outputDir: Path to the uniquely created subfolder.
+    % - outputDir: Path to the created subfolder.
     
     % Define the base output directory
-    baseOutputDir = fullfile(baseDir, subfolderName);
-    outputDir = baseOutputDir;
+    outputDir = fullfile(baseDir, subfolderName);
     
-    % Check if the folder exists, and append a counter if it does
-    counter = 1;
-    while exist(outputDir, 'dir')
-        outputDir = sprintf('%s_%d', baseOutputDir, counter);
-        counter = counter + 1;
+    % Check if the folder exists
+    if exist(outputDir, 'dir')
+        % Remove the existing folder and its contents
+        disp(['Folder already exists. Removing: ', outputDir]);
+        rmdir(outputDir, 's'); % 's' flag for recursive removal
     end
 
-    % Create the unique output directory
+    % Create the new output directory
     mkdir(outputDir);
     disp(['Created output folder: ', outputDir]);
 end
